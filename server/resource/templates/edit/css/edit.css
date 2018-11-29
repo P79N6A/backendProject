@@ -1,0 +1,85 @@
+body {
+    background: #3b3b3b;   
+}
+input, textarea {
+    outline: none;
+    padding: 0px;
+    border: none;
+    border-radius: 0px;
+    
+}
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 21.5px 32px 0;
+}
+.avatar {
+    width: 86px;
+    height: 86px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+.person-info {
+    align-self: stretch;
+    margin-top: 23px;
+}
+.person-name p {
+    font-size: 18px;
+    line-height: 18px;
+    color: #7c7c7c
+}
+.person-name .nickname  {
+    height: 33.5px;
+    width: 100%;
+    font-size: 24px;
+    color: #fff;
+    padding-top: 18px;
+    padding-bottom: 8.5px;
+    border-bottom: 1px solid #fff;
+    background-color: #3b3b3b;
+}
+.nickname::-webkit-input-placeholder {
+    color: #fff;
+}
+
+.person-sign {
+    margin-top: 34px;
+}
+.person-sign p {
+    font-size: 18px;
+    line-height: 18px;
+    color: #7c7c7c
+}
+
+.person-sign .sign {
+    width: 100%;
+    height: 135px;
+    font-size: 18px;
+    color: #000;
+    background-color: #fff;
+    margin-top: 14.5px;
+}
+
+.upload-file {
+    margin-top: 14px;
+}
+.file-btn{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 44px;
+    text-decoration: none;
+    font-size: 16px;
+    color: #fff;
+    background-color: #ff6600;
+}
+.file-btn img {
+    height: 25px;
+    width: 25px;
+    margin-right: 14px;
+}
+
+
+

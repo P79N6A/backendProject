@@ -1,0 +1,401 @@
+syntax = "proto2";
+package ticketsvr_protos;
+option java_package = "com.tencent.qt.protocol.pb";
+option java_outer_classname = "ticketsvr";
+
+enum ServiceCmd
+{
+    CMD_TICKETSVR = 0x317; 
+}
+
+enum ServiceSubCmd
+{
+    SUBCMD_AUTH_TOKEN            = 0x1;
+	SUBCMD_SERVICEPROXY_LIST     = 0x02; //获取业务代理列表
+    SUBCMD_AUTH_TOKEN_WITH_OPENID	= 0x3;//登录没有账号（qq，微信）id，只有openid，需要后台服务器换取账号id
+    SUBCMD_PARSE_UUID			 = 0x4;//解析uuid，根据uuid返回账号类型，如果是qq号，则同时返回qq号
+    SUBCMD_WEB_AUTH_TOKEN		 = 0x5;//web使用小票验证
+    SUBCMD_PARSE_UUID_BATCH		 = 0x6;//批量解析uuid，根据uuid返回账号类型，如果是qq号，则同时返回qq号, 如果是微信，则返回commid
+    SUBCMD_USERID_TO_UUID		 = 0x7;//qq号或者commid转换成uuid
+    SUBCMD_PARSE_ID				 = 0x8;//解析id，判断id是qq号、微信commid、uuid；如果是uuid，则需要解析出qq号和微信commid
+    SUBCMD_AUTH_NEW				 = 0x9;//登录验证新协议, 登录账号可以是qq或微信。 验证方式可以是qq的st，或者微信的token。
+    SUBCMD_WX_GET_TOKEN			 = 0xa;//微信用授权码到服务器获取token
+    SUBCMD_GET_WX_COMMID_BY_OPENID	= 0xb;//根据微信openid获取commid
+    SUBCMD_CHECK_TOKEN_VALIDITY	 = 0xc;//检查token是否合法
+    SUBCMD_GET_QQ_BY_TOKEN		 = 0xd;//根据token获取qq号
+    SUBCMD_PRESSURE_TEST		 = 0xe;//压力测试协议
+    SUBCMD_GET_UUID_BY_OPENAPPID = 0xf;//根据openappid获取uuid
+    SUBCMD_GET_UUID_BY_OPENAPPID_MIX = 0x10;//根据openappid获取uuid, 可以拉取视频中心的uuid或游戏圈的uuid
+    SUBCMD_GET_TOKEN_BY_IMSDK_TICKET	= 0x11;//使用imsdk票据信息获取登录token
+}
+
+enum AuthenType
+{
+    AuthenType_QQ = 1; 
+    AuthenType_WeChat  = 2; //微信号
+    AuthenType_PtLogin = 3; //QQ网页登录
+    AuthenType_Tourist = 4; //游客
+    AuthenType_Imsdk   = 5; //imsdk账号
+}
+
+enum STSOURCE
+{
+    ST_QT = 1;
+    ST_CROSS = 2;
+};
+
+
+//subcmd SUBCMD_AUTH_TOKEN 0x1
+//组包说明：用户通过QQ登陆，QQ号为123456，游戏为LOL（openappid=10000），大区为艾欧里亚（如果没有大区填40亿=4000000000）
+//则请求参数为：account_name="123456"，account_type=AccountType_QQ，openappid=10000，areaid=1，client_type填分配的值，st_type和st_buf填SSO返回的签名，access_token不填
+//组包说明：用户通过微信登陆，微信openid为oDF3iYx0ro3_7jD4HFRDfrjdCM58，微信访问token为sFopJ9lMmLl4u-ad61ojKpS0TolhN2s3SnHoI2Mh5GgdiYb35i-7DG2T2CDyQKMe，游戏为LOL（openappid=10000），大区为艾欧里亚（如果没有大区填40亿=4000000000）
+//则请求参数为：account_name="oDF3iYx0ro3_7jD4HFRDfrjdCM58"，account_type=AccountType_WeChat，openappid=10000，areaid=1，access_token="sFopJ9lMmLl4u-ad61ojKpS0TolhN2s3SnHoI2Mh5GgdiYb35i-7DG2T2CDyQKMe"，client_type填分配的值，st_type和st_buf不填
+//游客：account_type填AccountType_Tourist，account_name填机器码，openappid、client_type、areaid填相应的值
+message AuthTokenReq
+{
+	required bytes  account_name     = 1; //帐号名
+	optional uint32 authen_type      = 2; //帐号类型，见AuthenType定义
+	optional uint64 openappid        = 3; //开放应用id
+	optional uint32 client_type      = 4; //终端类型
+	optional uint32 areaid           = 5; //大区ID，游戏用
+	optional bytes  access_token     = 6; //微信登录时填写，访问token
+	optional uint32 st_type          = 7; //QQ登录时填写，st_type: 就是AppID
+	optional bytes  st_buf           = 8; //QQ登录时填写，st_buf: SSO返回的签名信息
+	optional uint32 ptlogin_appid    = 9; //ptlogin认证时填写
+	optional uint32 ptlogin_domainid = 10; //ptlogin认证时填写
+	optional bytes  clientip         = 11; //客户端ip
+	optional bytes  mcode            = 12; //客户端机器码
+	optional uint32 client_time      = 13; //客户端时间戳 
+    optional uint32 gameid           = 14; 
+    optional uint32 st_source        = 15; //st来源
+}
+
+enum AuthTokenErrCode
+{
+	AuthTokenErrCode_Success         = 0; //成功
+	AuthTokenErrCode_UnknowAccount   = 1; //不支持的帐号类型，重新进行认证
+	AuthTokenErrCode_QQAuthFail      = 2; //QQ认证失败，重新进行认证
+	AuthTokenErrCode_WeChatAuthFail  = 3; //微信认证失败，重新进行认证
+	AuthTokenErrCode_UuidFail        = 4; //获取uuid失败，使用本地cache
+	AuthTokenErrCode_InnerTimeOut    = 5; //内部超时，使用本地cache
+	AuthTokenErrCode_InnerError      = 6; //内部错误，使用本地cache
+	AuthTokenErrCode_PtLoginAuthFail = 7; //PtLogin认证失败，重新进行认证
+	AuthTokenErrCode_ImsdkAuthFail   = 8; //imsdk票据认证失败，重新进行认证
+	AuthTokenErrCode_ProcessFail	 = 9; //处理失败
+}
+
+message AuthTokenRsp
+{
+	required uint32 result          = 1; //结果，具体错误码见AuthTokenErrCode定义
+	optional bytes  errmsg          = 2; //错误信息
+	optional string uuid            = 3; //uuid，用户的QT身份ID
+	optional string openid          = 4; //openid，用户的QT通道ID
+	repeated uint32 iplist          = 5; //业务代理IP列表，如果IP列表为空，请使用本地cache
+	repeated uint32 portlist        = 6; //业务代理端口列表
+	
+	//qt_gtk加密签名，QQ登录用sso_gtk解密；
+	//微信登录用wx_gtk（将access_token进行一次md5，生成wx_gtk）解密；
+	//游客登录用默认key（*-l#_,L<19ai^R*p）解密；
+	optional bytes  qt_auth         = 7;
+	optional bytes  qt_token        = 8; //客户端透传票据，注册在线时使用
+	optional uint32 expires         = 9; //cache过期时间，unix时间戳
+	optional bytes  qt_access_token = 10; //Qt的登录态key，和qt_token一一对应
+}
+
+
+//subcmd SUBCMD_SERVICEPROXY_LIST 0x2
+message ServiceProxyListReq
+{
+	optional uint32 client_type = 1; //终端类型
+}
+
+message ServiceProxyListRsp
+{
+	required uint32 result   = 1; //结果，具体错误码见AuthTokenErrCode定义
+	optional bytes  errmsg   = 2; //错误信息
+	repeated uint32 iplist   = 3; //业务代理IP列表，如果IP列表为空，请使用本地cache
+	repeated uint32 portlist = 4; //业务代理端口列表
+}
+
+
+//SUBCMD_AUTH_TOKEN_WITH_OPENID	= 0x3; 登录没有账号（qq，微信）id，只有openid，需要后台服务器换取账号id
+message AuthTokenWithOpenidReq
+{
+	optional uint32 authen_type      = 1; //帐号类型，见AuthenType定义, 目前只用到qq和微信两种方式
+	optional uint64 openappid        = 2; //开放应用id
+	optional uint32 client_type      = 3; //终端类型
+	optional uint32 areaid           = 4; //游戏大区ID，没有可不填
+	optional bytes  access_token     = 5; //游戏端登录qq或者微信后的token
+	optional bytes  openid			 = 6; //游戏端登录qq或者微信后的openid
+	optional bytes  clientip         = 7; //客户端ip
+	optional bytes  mcode            = 8; //客户端机器码
+	optional uint32 client_time      = 9; //客户端时间戳 
+    optional uint32 gameid           = 10; 
+    optional bytes  wxappid			 = 11;//微信登录游戏appid 
+	optional uint64 qqappid          = 12; //qq登录游戏appid
+}
+
+message AuthTokenWithOpenidResp
+{
+	required uint32 result          = 1; //结果，具体错误码见AuthTokenErrCode定义
+	optional bytes  errmsg          = 2; //错误信息
+	optional string qt_uuid         = 3; //uuid，用户的身份ID, 如果是qq账号，则该字段填写qq号， 如果是微信号，该字段是commid
+	optional string qt_openid       = 4; //openid，用户的通道ID
+	repeated uint32 iplist          = 5; //业务代理IP列表，如果IP列表为空，请使用本地cache
+	repeated uint32 portlist        = 6; //业务代理端口列表
+	
+	optional bytes  qt_auth         = 7;//用gtk（将access_token进行两次次md5，生成gtk）解密, 解包后有一个字符串，作为后续和业务代理同学加密使用的key
+	optional bytes  qt_token        = 8; //客户端透传票据，注册在线时使用
+	optional uint32 expires         = 9; //cache过期时间，unix时间戳
+	optional bytes  qt_access_token = 10; //Qt的登录态key，和qt_token一一对应
+}
+
+
+//SUBCMD_PARSE_UUID			 = 0x4;//解析uuid，根据uuid返回账号类型，如果是qq号，则同时返回qq号
+enum ParseUuidAccountType
+{
+    ACCOUNT_TYPE_TOURIST = 0;
+    ACCOUNT_TYPE_QQ = 1;
+    ACCOUNT_TYPE_WEIXIN = 2;
+    ACCOUNT_TYPE_OTHER = 3;
+    ACCOUNT_TYPE_IMSDK = 4;
+}
+
+message ParseUuidReq
+{
+	required bytes uuid = 1;
+}
+message ParseUuidRsp
+{
+	required uint32 result	= 1;//0 成功， 非0 失败
+	required bytes uuid 	= 2;
+	optional uint32 type  	= 3;//0 游客， 1 qq , 2 微信, 3 其他, 4 imsdk
+	optional uint64 uin 	= 4;//如果是qq，返回qq号
+	optional bytes commid   = 5;//如果是微信，commid
+	optional bytes imsdkid = 6;//如果是imsdk账号，填写该字段
+}
+
+//    SUBCMD_WEB_AUTH_TOKEN		 = 0x5	web使用小票验证
+message WebAuthReq
+{
+	required string uuid            = 1; //用户id
+	required bytes  qt_access_token = 2; //qt小票
+	optional uint32 clientip        = 3; //客户端ip
+}
+message WebAuthRsp 
+{
+	required uint32 result = 1; //0认证成功，1认证失败，2票据过期
+	optional bytes  errmsg = 2; //错误信息
+}
+
+//SUBCMD_PARSE_UUID_BATCH		 = 0x6;//批量解析uuid，根据uuid返回账号类型，如果是qq号，则同时返回qq号, 如果是微信，则返回commid
+message ParseUuidBatchReq
+{
+	repeated bytes uuids = 1;
+}
+message ParseUuidBatchRsp
+{
+	message UuidParseInfo
+	{
+		required bytes 	uuid 	= 1;
+		optional uint32 type 	= 2;//0 游客， 1 qq , 2 微信, 3 其他 , 4 imsdk
+		optional uint64 uin 	= 3;//如果是qq，则返回qq号
+		optional bytes 	commid  = 4;//如果是微信，则返回commid
+		optional bytes imsdkid = 5; // 如果是imsdk， 则返回imsdkid
+	}
+
+	repeated UuidParseInfo infos = 1;
+}
+//    SUBCMD_USERID_TO_UUID		 = 0x7;//qq号或者commid或imsdkid转换成uuid
+message UseridToUuidReq
+{
+	required uint32 client_type 	= 1;//终端类型
+	repeated bytes 	userids			= 2;//用户的qq号, 或者微信用户的commid, 或者根据imsdk的openid生成的imsdkid
+}
+message UseridToUuidRsp
+{
+	message UuidInfo
+	{
+		required bytes  userid 		= 1;//用户的qq号或者微信用户的commid
+		required uint32 type    	= 2;//0 游客， 1 qq , 2 微信, 3 其他
+		optional bytes 	uuid		= 3;//用户的uuid
+		optional bytes 	openid		= 4;//用户的openid
+	}
+	repeated UuidInfo  infos = 1;
+}
+
+// SUBCMD_PARSE_ID				 = 0x8;//解析id，判断id是qq号、微信commid, imsdkid、uuid；如果是uuid，则需要解析出qq号和微信commid和imsdkid
+message ParseIdReq
+{
+	repeated bytes ids = 1;
+}
+message ParseIdRsp
+{
+	message IdParseInfo
+	{
+		required bytes 	id			= 1;
+		required uint32 id_type		= 2;//id类型：  0 是qq号， 1 微信commid， 2 uuid, 3 imsdkid
+
+		optional uint32 uuid_type 	= 3;//uuid类型：0 游客， 1 qq , 2 微信, 3 其他.  (注意： 当id_type 为2 时，该字段才有效), 4 imsdkid
+		optional uint64 uin 		= 4;//如果是qq，则返回qq号
+		optional bytes 	commid  	= 5;//如果是微信，则返回commid
+		optional uint32 openappid	= 6;//uuid对应的业务openappid（注意，只有当id_type 为2 时, 且uuid_type 为1或2时, 该字段才有效）
+		optional bytes 	imsdkid		= 7;//如果是imsdk，则返回imsdkid
+	}
+
+	repeated IdParseInfo infos = 1;
+}
+//    SUBCMD_AUTH_NEW				 = 0x9;//登录验证新协议, 登录账号可以是qq或微信。 验证方式可以是qq的st，或者微信的token。
+message AuthNewReq
+{
+	optional uint32 auth_type		 = 1; //帐号类型，见AuthenType定义, 目前只用到qq和微信两种方式
+	optional bytes	sso_userid		 = 2; //QQ登录是QQ号(或者qq的openid)，wx登录是openid
+	optional bytes	sso_ticket		 = 3; //QQ登录是st票据(或者token)，wx登录是access_token
+	optional bytes	sso_appid		 = 4;//微信或QQ分配给应用的appid 
+	optional uint64 openappid		 = 5; //开放应用id
+	optional uint32 client_type		 = 6; //终端类型
+
+	optional bytes	clientip		 = 7; //客户端ip
+	optional bytes	mcode			 = 8; //客户端机器码
+	optional uint32 client_time		 = 9; //客户端时间戳 
+
+	optional uint32 gameid			 = 10; //游戏id，没有可不填
+	optional uint32 areaid			 = 11; //游戏大区ID，没有可不填
+}
+
+message AuthNewRsp
+{
+	required uint32 result          = 1; //结果，具体错误码见AuthTokenErrCode定义
+	optional bytes  errmsg          = 2; //错误信息
+	optional string qt_uuid         = 3; //uuid，用户的身份ID
+	optional string qt_openid       = 4; //openid，用户的通道ID
+	repeated uint32 iplist          = 5; //业务代理IP列表，如果IP列表为空，请使用本地cache
+	repeated uint32 portlist        = 6; //业务代理端口列表
+	
+	optional bytes  qt_auth         = 7;//用gtk（将access_token进行两次次md5，生成gtk）解密, 解包后有一个字符串，作为后续和业务代理同学加密使用的key
+	optional bytes  qt_token        = 8; //客户端透传票据，注册在线时使用
+	optional uint32 expires         = 9; //cache过期时间，unix时间戳
+	optional bytes  qt_access_token = 10; //Qt的登录态key，和qt_token一一对应
+	optional bytes  commid			= 11; //如果是微信登录的，则该字段才有效
+}
+
+//SUBCMD_WX_GET_TOKEN			 = 0xa;//微信用授权码到服务器获取token
+message WxGetTokenReq
+{
+	required bytes  wxappid 			= 1;//微信登录时，微信分配给应用的appid 
+	required bytes  authorization_code	= 2;//应用使用微信第三方登录时，返回给客户端的授权码
+}
+message WxGetTokenRsp
+{
+	required uint32 result 			= 1;//0 成功， 非0 失败
+	optional bytes  openid			= 2;//微信openid
+	optional bytes  access_token	= 3;//微信token， 有效期短
+	optional uint32 expire_time		= 4;//access_token 过期时间，单位秒
+	optional bytes  refresh_token	= 5;//微信refresh_token， 有效期长，token过期后,可以用该refresh_token到微信获取新的token
+}
+
+//    SUBCMD_GET_WX_COMMID_BY_OPENID	= 0xb;//根据微信openid获取commid
+message GetWxCommidByOpenidReq
+{
+	required bytes openid	 		= 1;//微信登录后的openid
+	optional uint32 client_type		= 2; //终端类型
+}
+message GetWxCommidByOpenidRsp
+{
+	required uint32 result 			= 1;//0 成功， 非0 失败
+	required bytes	openid			= 2;//微信登录后的openid
+	optional bytes	commid			= 3;//微信登录后的openid换取的commid
+}
+
+//    SUBCMD_CHECK_TOKEN_VALIDITY	 = 0xc;//检查token是否合法
+message CheckTokenValidityReq
+{
+	required bytes uuid				= 1;
+	required bytes token		    = 2;
+}
+message CheckTokenValidityRsp
+{
+	required bytes uuid			    = 1;
+	required uint32  result			= 2;//0 token合法， 1 解token失败, 2 用户id不一致， 3 其他错误
+}
+
+// SUBCMD_GET_QQ_BY_TOKEN		 = 0xd;//根据token获取qq号
+message GetQqByTokenReq
+{
+	required bytes  openid			 = 1; //游戏端登录qq的openid
+	required bytes  access_token     = 2; //游戏端登录qq的token
+	required uint32 clientip         = 3; //客户端ip
+	required uint64 qqappid          = 4; //qq登录游戏appid
+}
+message GetQqByTokenRsp
+{
+	required bytes  openid			 = 1; //游戏端登录qq的openid
+	required uint32 result		     = 2; //0 成功， 非0 失败
+	optional uint64 uin			     = 3; //qq号， result 为0 时该字段才有效
+}
+//    SUBCMD_PRESSURE_TEST		 = 0xe;//压力测试协议
+message PressureTestReq
+{
+	required bytes id = 1;//请求id
+}
+message PressureTestRsp
+{
+	required bytes id = 1;//请求id
+}
+
+
+//SUBCMD_GET_UUID_BY_OPENAPPID = 0xf;//根据openappid获取uuid
+message GetUuidByOpenappidReq
+{
+	required uint32 openappid       = 1;//业务类型
+	repeated bytes 	userids			= 2;//用户的qq号或者微信用户的commid, 每次最多50个， 超过将返回失败
+}
+message GetUuidByOpenappidRsp
+{
+	required uint32 result 			= 1;// 0 成功， 1 openappid 非法, 2 请求个数超过限制
+	message UuidInfo
+	{
+		required bytes  userid 		= 1;//用户的qq号或者微信用户的commid
+		required uint32 type    	= 2;//1 qq , 2 微信
+		optional bytes 	uuid		= 3;//用户的uuid
+	}
+	repeated UuidInfo  infos = 2;
+}
+
+//    SUBCMD_GET_UUID_BY_OPENAPPID_MIX = 0x10;//根据openappid获取uuid, 可以拉取视频中心的uuid或游戏圈的uuid
+//请求包体和回包见 GetUuidByOpenappidReq 和 GetUuidByOpenappidRsp
+
+
+
+
+//    SUBCMD_GET_TOKEN_BY_IMSDK_TICKET	= 0x11;//使用imsdk票据信息获取登录token
+message GetTokenByImsdkTicketReq
+{
+	required uint64 openappid        = 1; //开放应用id(服务器分配)
+	required uint32 client_type      = 2; //终端类型(服务器分配)
+	required bytes  imsdk_ticket     = 3; //imsdk票据
+	required uint64 openid			 = 4; //游戏端登录imsdk后，imsdk分配给用户的id
+	required uint32 locationid		 = 5; // 地区id(由于imsdk不同地区的服务器部署是分配部署的， 所以需要用一个地区id加以区分)
+	required bytes  mcode            = 6; //客户端机器码
+}
+
+message GetTokenByImsdkTicketRsp
+{
+	required uint32 result          = 1; //结果，具体错误码见AuthTokenErrCode定义
+	optional bytes  errmsg          = 2; //错误信息
+	optional string qt_uuid         = 3; //uuid，用户的身份ID, 如果是qq账号，则该字段填写qq号， 如果是微信号，该字段是commid
+	optional string qt_openid       = 4; //openid，用户的通道ID
+	repeated uint32 iplist          = 5; //业务代理IP列表，如果IP列表为空，请使用本地cache
+	repeated uint32 portlist        = 6; //业务代理端口列表
+
+	optional bytes  qt_auth         = 7;//用gtk（将access_token进行两次次md5，生成gtk）解密, 解包后有一个字符串，作为后续和业务代理同学加密使用的key
+	optional bytes  qt_token        = 8; //客户端透传票据，注册在线时使用
+	optional uint32 expires         = 9; //cache过期时间，unix时间戳
+	optional bytes  qt_access_token = 10; //Qt的登录态key，和qt_token一一对应
+}
+
+message GameTimeAppLoginHistroy
+{
+	optional uint32 firstLoginTime	= 1; // 第一次登录时间戳
+	optional uint32 recentLoginTime	= 2; // 最近登录时间戳
+}

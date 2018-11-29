@@ -1,0 +1,3 @@
+import hero_time_recommend_pb2
+
+print hero_time_recommend_pb2.CMD_HEROTIMESVR

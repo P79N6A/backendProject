@@ -1,0 +1,222 @@
+// key - value data
+// 数据访问协议使用datasvr_common.proto中定义的协议。
+// 命令字使用为数据分配的专用命令字。
+// 数据具体内容可以在本文件中定义，也可以应用自己定义。
+
+//注意：批量拉取的key最好不要超过50
+
+syntax = "proto2";
+package datasvr_protos;
+
+enum datasvr_kv_0x203a_cmd_types
+{
+	CMD_DATASVR_KV_0x203a = 0x203a;
+}
+
+enum datasvr_kv_0x203a_subcmd_types
+{
+	//查询游戏比赛信息 (from db_vr_game:game_line_competition, cache in redis)
+	SUBCMD_GET_GAME_COMPETITIONS_STATUS1    = 0x01;  //直播未开始(节目预告)
+	SUBCMD_GET_GAME_COMPETITIONS_STATUS5    = 0x02;  //直播已录制上传(回放列表)
+	SUBCMD_GET_GAME_COMPETITIONS_STATUS23   = 0x03;  //直播进行中(未开始游戏和已开始游戏)
+	SUBCMD_GET_GAME_COMPETITION_INFO   		= 0x04;  //比赛详情
+	
+	//查询指定游戏的比赛信息  (key格式： @gameid_@offset_@num)
+	SUBCMD_GET_GAME_PALN_COMPETITIONS       = 0x05;  //直播未开始(节目预告)
+	SUBCMD_GET_GAME_UPLOAD_COMPETITIONS     = 0x06;  //直播已录制上传(回放列表)
+	SUBCMD_GET_GAME_LIVING_COMPETITIONS     = 0x07;  //直播进行中(未开始游戏和已开始游戏)
+	
+	//查询指定游戏某种比赛类型的比赛信息  (key格式： @gameid_@raceid_@offset_@num)
+	SUBCMD_GET_GAME_RACETYPE_PALN_COMPETITIONS       = 0x08;  //直播未开始(节目预告)
+	SUBCMD_GET_GAME_RACETYPE_UPLOAD_COMPETITIONS     = 0x09;  //直播已录制上传(回放列表)
+	SUBCMD_GET_GAME_RACETYPE_LIVING_COMPETITIONS     = 0x0a;  //直播进行中(未开始游戏和已开始游戏)
+	
+	//查询CG动画列表  
+	SUBCMD_GET_APP_CG_VIDEOS       		= 0x0b;  //动画列表 (key格式： @offset_@num)
+	SUBCMD_GET_GAME_APP_CG_VIDEOS       = 0x0c;  //指定游戏的动画列表 (key格式： @gameid_@offset_@num)
+	
+	//人人直播用户绑定房间  
+	SUBCMD_GET_RENREN_LIVE_USER_ROOM	= 0x0d;  //查询 (key格式： @userid, value: CMD_DBPROXY_PRESQL::DBRecordset)
+	SUBCMD_SET_RENREN_LIVE_USER_ROOM	= 0x0e;  //插入 (key格式： @userid, value: CMD_DBPROXY_PRESQL::DBFieldsList)
+	
+	//用户group房间在线状态
+	SUBCMD_GET_USER_GROUP_ROOM_ONLINE_STATUS     = 0x0f; 
+	SUBCMD_SET_USER_GROUP_ROOM_ONLINE_STATUS     = 0x10; 
+	SUBCMD_DEL_USER_GROUP_ROOM_ONLINE_STATUS     = 0x11; 
+	
+	//视频点赞量 -- wegame英雄时刻  (需要累加数据)
+	SUBCMD_GET_WEGAME_VIDEO_PRAISE_NUM	= 0x12;
+	SUBCMD_SET_WEGAME_VIDEO_PRAISE_NUM	= 0x13;
+	SUBCMD_DEL_WEGAME_VIDEO_PRAISE_NUM	= 0x14;
+	
+	//wegame评论消息
+	SUBCMD_GET_WEGAME_COMMENT_MSG	= 0x15;
+	SUBCMD_SET_WEGAME_COMMENT_MSG	= 0x16;
+	SUBCMD_DEL_WEGAME_COMMENT_MSG	= 0x17;
+	
+	//wegame视频信息
+	SUBCMD_GET_WEGAME_VIDEO_INFO	= 0x18;  //key格式：@video_id
+	
+	//wegame视频热门搜索配置
+	SUBCMD_GET_WEGAME_VIDEO_HOT_TAGS	= 0x19; //key格式：@type_@offset_num
+	
+	//wegame视频配置频道列表
+	SUBCMD_GET_WEGAME_VIDEO_CHANNEL_LIST	= 0x1a;  //key格式：@type_@offset_@num
+	
+	//wegame视频频道信息
+	SUBCMD_GET_WEGAME_VIDEO_CHANNEL_INFO	= 0x1b; //key格式：@channel_id
+	
+	//wegame视频子频道列表
+	SUBCMD_GET_WEGAME_VIDEO_SUB_CHANNEL_LIST	= 0x1c; //key格式：@parentid_@offset_@num
+	
+	//按时间查询wegame视频频道列表
+	SUBCMD_GET_WEGAME_VIDEO_CHANNEL_LIST_BY_CREATE_TIME	= 0x1d;  //key格式：@channelid_@offset_@num
+	
+	//按热度查询wegame视频频道列表
+	SUBCMD_GET_WEGAME_VIDEO_CHANNEL_LIST_BY_HOT	= 0x1e;  //key格式：@channelid_@offset_@num
+	
+	//查询wegame视频标签信息
+	SUBCMD_GET_WEGAME_VIDEO_TAG_INFO	= 0x1f; //key格式：@video_id
+	
+	//查询wegame视频信息（按VID 查询）
+	SUBCMD_GET_WEGAME_VIDEO_INFO_BY_VID	= 0x20; //key格式：@vid
+		
+	
+	//wegame视频用户资料
+	SUBCMD_GET_WEGAME_VIDEO_USER_INFO	= 0x21;
+	SUBCMD_SET_WEGAME_VIDEO_USER_INFO	= 0x22;
+	SUBCMD_DEL_WEGAME_VIDEO_USER_INFO	= 0x23;
+	
+	//wegame视频关注资料
+	SUBCMD_GET_WEGAME_VIDEO_USER_FOLLOW	= 0x24;
+	SUBCMD_SET_WEGAME_VIDEO_USER_FOLLOW	= 0x25;
+	SUBCMD_DEL_WEGAME_VIDEO_USER_FOLLOW	= 0x26;
+	
+	//查询wegame视频频道用户
+	SUBCMD_GET_WEGAME_VIDEO_CHANNEL_USERS	= 0x27; //key格式：@channel_id
+	
+	//查询wegame视频用户的频道信息（按QQ 查询）
+	SUBCMD_GET_WEGAME_VIDEO_USER_CHANNEL_INFO	= 0x28; //key格式：@uin
+	
+	//wegame视频大V用户信息
+	SUBCMD_GET_WEGAME_VIDEO_VIP_USER_INFO	= 0x29;
+	SUBCMD_SET_WEGAME_VIDEO_VIP_USER_INFO	= 0x2a;
+	SUBCMD_DEL_WEGAME_VIDEO_VIP_USER_INFO	= 0x2b;
+		
+	//VR APP用户资料
+	SUBCMD_GET_VR_USER_PROFILE	= 0x2c;
+	SUBCMD_SET_VR_USER_PROFILE	= 0x2d;
+	SUBCMD_DEL_VR_USER_PROFILE	= 0x2e;
+	
+	//VR app用户积分Profile信息、战局贡献信息、用户战局贡献信息
+	SUBCMD_GET_VR_USER_SCORE_INFO	= 0x2f;
+	SUBCMD_SET_VR_USER_SCORE_INFO	= 0x30;
+	SUBCMD_DEL_VR_USER_SCORE_INFO	= 0x31;
+	
+	//存储微信用户的opneid
+	SUBCMD_GET_WX_USER_OPENID	= 0x32;
+	SUBCMD_SET_WX_USER_OPENID	= 0x33;
+	SUBCMD_DEL_WX_USER_OPENID	= 0x34;
+		
+	//按时间查询标签视频列表
+	SUBCMD_GET_WEGAME_VIDEO_LIST_ORDER_BY_TIME	= 0x35; //key格式：@tagid_@offset_@num
+	//按热度查询标签视频列表 
+	SUBCMD_GET_WEGAME_VIDEO_LIST_ORDER_BY_SCORE	= 0x36; //key格式：@tagid_@offset_@num
+	
+	//查询wegame视频推荐主播 
+	SUBCMD_GET_WEGAME_VIDEO_CHANNEL_PUBLISHERS	= 0x37; //key格式：@offset_@num
+	
+	//游戏赛事直播节目单查询（支持战队筛选）  (key格式： @gameid_@teamnames_@offset_@num)
+	SUBCMD_GET_GAME_COMPETITION_PLANS       = 0x38;  	
+	//游戏赛事直播点播视频查询（支持战队筛选）  (key格式： @gameid_@teamnames_@offset_@num)
+	SUBCMD_GET_GAME_COMPETITION_VOD       = 0x39;  	
+	//游戏赛事直播直播查询（支持战队筛选）  (key格式： @gameid_@teamnames_@offset_@num)
+	SUBCMD_GET_GAME_COMPETITION_LIVING       = 0x3a;  
+	
+	
+	//拉取热门搜索词配置
+	SUBCMD_GET_WEGAME_VIDEO_HOT_SEARCH_WORDS		= 0x3b; //key格式：@type_@offset_@num
+	//拉取标签今日更新视频
+	SUBCMD_GET_WEGAME_VIDEO_TODAY_UPDATE_VIDEOS_NUM	= 0x3c; //key格式：@tagid_@time
+	//拉取排行榜配置
+	SUBCMD_GET_WEGAME_VIDEO_RANK_CFG				= 0x3d; //key格式：@type_@offset_@num
+	//拉取广告配置
+	SUBCMD_GET_WEGAME_VIDEO_ADS_CFG					= 0x3e; //key格式：@type_@offset_@num
+	
+	
+	//增加联赛类型战队筛选
+	//游戏赛事直播节目单查询（支持联赛类型下战队筛选）  (key格式： @gameid_@racetype_@teamnames_@offset_@num)
+	SUBCMD_GET_GAME_RACETYPE_COMPETITION_PLANS       	= 0x3f;  	
+	//游戏赛事直播点播视频查询（支持联赛类型下战队筛选）  (key格式： @gameid_@racetype_@teamnames_@offset_@num)
+	SUBCMD_GET_GAME_RACETYPE_COMPETITION_VOD       		= 0x40;  	
+	//游戏赛事直播直播查询（支持联赛类型下战队筛选）  (key格式： @gameid_@racetype_@teamnames_@offset_@num)
+	SUBCMD_GET_GAME_RACETYPE_COMPETITION_LIVING       	= 0x41;  
+	
+	
+	SUBCMD_GET_GAME_COMPETITION_SMIPLE_INFO   		= 0x42;  //比赛详情简略信息
+	SUBCMD_GET_GAME_UPLOAD_SMIPLE_COMPETITIONS     	= 0x43;  //直播已录制上传简略信息(回放列表)
+	
+	//wegame 视频评论禁言用户
+	SUBCMD_GET_WEGAME_VIDEO_SILENT_USER	= 0x44;
+	SUBCMD_SET_WEGAME_VIDEO_SILENT_USER	= 0x45;
+	SUBCMD_DEL_WEGAME_VIDEO_SILENT_USER	= 0x46;
+	
+	//用户最近登录时间
+	SUBCMD_GET_USER_LAST_LOGIN_TIME	= 0x47;
+	SUBCMD_SET_USER_LAST_LOGIN_TIME	= 0x48;
+	SUBCMD_DEL_USER_LAST_LOGIN_TIME	= 0x49;
+	
+	//wegame video视频直播房间信息
+	SUBCMD_GET_WEGAME_VIDEO_ROOM_INFO	= 0x4a;
+	SUBCMD_SET_WEGAME_VIDEO_ROOM_INFO	= 0x4b;
+	SUBCMD_DEL_WEGAME_VIDEO_ROOM_INFO	= 0x4c;
+	
+	//VR直播 评论消息数据
+	SUBCMD_GET_VR_APP_COMMENT	= 0x4d;
+	SUBCMD_SET_VR_APP_COMMENT	= 0x4e;
+	SUBCMD_DEL_VR_APP_COMMENT	= 0x4f;
+	
+	//数据中心请求统计信息
+	SUBCMD_GET_REQ_STAT_INFO	= 0x50;
+	SUBCMD_SET_REQ_STAT_INFO	= 0x51;
+	SUBCMD_DEL_REQ_STAT_INFO	= 0x52;
+	
+	//作者信息缓存 db_video_app::tb_author
+	SUBCMD_GET_AUTHOR_INFO	= 0x53;	
+	
+	//作者ID
+	SUBCMD_GET_AUTHOR_ID	= 0x54;
+	SUBCMD_SET_AUTHOR_ID	= 0x55;
+	SUBCMD_DEL_AUTHOR_ID	= 0x56;
+	
+	//拉取作者视频的游戏列表
+	SUBCMD_GET_WEGAME_VIDEO_AUTHOR_GAME_LIST			= 0x57; //key格式：@uid_@offset_@num
+	//按时间拉取作者的游戏视频
+	SUBCMD_GET_WEGAME_VIDEO_AUTHOR_VID_LIST_BY_TIME		= 0x58; //key格式：@uid_@gameid_@offset_@num
+	//按热度拉取作者的游戏视频
+	SUBCMD_GET_WEGAME_VIDEO_AUTHOR_VID_LIST_BY_HOT		= 0x59; //key格式：@uid_@gameid_@offset_@num	
+	
+	//wegame video视频推荐列表缓存
+	SUBCMD_GET_WEGAME_VIDEO_RECOMMEND_LIST	= 0x5a;
+	SUBCMD_SET_WEGAME_VIDEO_RECOMMEND_LIST	= 0x5b;
+	SUBCMD_DEL_WEGAME_VIDEO_RECOMMEND_LIST	= 0x5c;
+	
+	//wegame video 作者的视频总数
+	SUBCMD_GET_WEAGAME_VIDEO_AUTHOR_VIDEO_NUM	= 0x5d;	 //key格式: @author_uid
+	
+	//微信commid to openid 映射表
+	SUBCMD_GET_WX_COMMID_2_OPENID	= 0x5e;
+	SUBCMD_SET_WX_COMMID_2_OPENID	= 0x5f;
+	SUBCMD_DEL_WX_COMMID_2_OPENID	= 0x60;
+	
+	//LOL玩家年度盘点数据
+	SUBCMD_GET_LOL_USER_CHAMPION_STATS	= 0x61;
+	SUBCMD_SET_LOL_USER_CHAMPION_STATS	= 0x62;
+	SUBCMD_DEL_LOL_USER_CHAMPION_STATS	= 0x63;
+	
+	//微信openid to openid 映射表
+	SUBCMD_GET_WX_OPENID_2_COMMID	= 0x64;
+	SUBCMD_SET_WX_OPENID_2_COMMID	= 0x65;
+	SUBCMD_DEL_WX_OPENID_2_COMMID	= 0x66;
+	
+}

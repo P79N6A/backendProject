@@ -1,0 +1,11 @@
+[mysql]
+host = newbridge.mdb.mig
+port = 16850
+user = writeuser
+passwd = tQdg8ZnYoVjrx04J
+db   = newbridge
+charset = utf8 
+[url]
+video = http://newbridge.sparta.html5.qq.com/ranges?file=%s&definition=%s&version=%s
+cover = http://newbridge.sparta.html5.qq.com/cover?file=%s
+icon  = http://newbridge.sparta.html5.qq.com/icon?file=%s

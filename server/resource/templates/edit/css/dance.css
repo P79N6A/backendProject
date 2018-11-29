@@ -1,0 +1,159 @@
+video {
+    width: 100%;
+}
+
+.top-video {
+    height: 212.5px;
+}
+.video-desc {
+    padding: 14.5px 0 0 17.5px;
+
+}
+.video-desc h3 {
+    font-size: 24px;
+    color: #000000;
+    text-align: left;
+}
+.video-desc .info {
+    padding-top: 8.5px;
+}
+
+.video-desc span {
+    opacity: 0.4;
+    font-size: 15px;
+    color: #000000;
+    text-align: left;
+    padding-right: 5px;
+}
+.video-desc span img{
+    height: 12px;
+    width: 12px;
+    margin-right: 5px;
+    opacity: 0.53;
+    background: #494949;
+}
+.person-info {
+    display: flex;
+    padding: 22.5px 0 0 19px;
+}
+.avatar {
+    height: 51px;
+    width: 51px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+.person-info .desc {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding-left: 11px;
+}
+.person-info .name {
+    font-size: 18px;
+    text-align: left;
+}
+.person-info .id {
+    display: flex;
+    align-items: center;
+    margin-top: 5px;
+    font-size: 18px;
+    color: #8D8D8D;
+    text-align: left;
+}
+.person-info .id img {
+    width: 19px;
+    height: 19px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 5px;
+}
+.good-videos {
+    padding: 29.5px 17.5px 0 17.5px;
+}
+.good-videos p {
+    padding-bottom: 10px;
+    /* font-size: 24px; */
+    color: #8D8D8D;
+    text-align: left;
+}
+.good-videos li {
+    padding-bottom: 24px;
+}
+.good-videos video {
+    width: 100%;
+    height: 100%;
+}
+/* 得分 */
+.scores {
+    padding: 0 11.5px 0 13px;
+    margin-top: 9.5px;
+    border-top: 1px solid #d0d0d0; 
+}
+.score-desc {
+    margin-top: 12px;
+    /* margin-left: 35px; */
+    font-size: 12px;
+    color: #8D8D8D;
+}
+.total-score {
+    font-size: 24px;
+    line-height: 36px;
+    color: #000;
+}
+.nice-shot {
+    display: flex;
+    flex-wrap: wrap;
+}
+.nice-shot p {
+    font-size: 15px;
+    margin-right: 62px;
+    margin-bottom: 8.5px;
+}
+.nice-shot p:first-child {
+    color: #ff0000;
+}
+
+.leadboard {
+    padding: 5px 23px 0 26px;
+    margin-top: 6px;
+    border-top: 1px solid #d0d0d0; 
+}
+.boardtitle {
+    font-size: 15px;
+    margin-right: 64px;
+    margin-bottom: 8.5px;
+}
+.board {
+    display: flex;
+}
+.board-left, .board-right {
+    width: 50%;
+}
+.border-item {
+    
+}
+.board li {
+    margin-bottom: 21px;
+}
+.item-detail {
+    display: flex;
+    align-items: center;
+}
+
+.item-detail .order {
+    font-size: 24px;
+    margin-right: 19.5px;
+}
+.item-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 8.5px;
+}
+.item-desc .item-name, .item-desc .item-id {
+    font-size: 12px;
+    line-height: 18px;
+}
+.item-desc .item-id {
+    color: #8d8d8d;
+}

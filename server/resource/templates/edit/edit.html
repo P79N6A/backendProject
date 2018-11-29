@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+    <head>
+        <title>edit</title>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+        <meta content="width=device-width, initial-scale=1.0,minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+        <meta content="yes" name="apple-mobile-web-app-capable">
+        <meta content="black" name="apple-mobile-web-app-status-bar-style">
+        <meta content="telephone=no" name="format-detection">
+        <link rel="stylesheet" type="text/css" href="./css/common.css">
+        <link rel="stylesheet" type="text/css" href="./css/edit.css">	
+    </head>
+    <body>
+        <div class="container">
+            <img class="avatar" alt="avatar" src="http://file.its.oa.com/Upload/ITService/74d0c357-1786-4d24-a81e-735b9c7a252b.jpg" />
+            <form id="person-info">
+                <div class="person-name">
+                    <p>昵称</p>
+                    <input class="nickname" type="text" name="name" placeholder="吃鸡大神秀操作" />
+                </div>
+                <div class="person-sign">
+                    <p>个性签名</p>
+                    <textarea class="sign" id="sign" cols="30" rows="10"></textarea>
+                </div>
+                <div class="upload-file">
+                     <input class="file-input" type="file" style="display:none"/>
+                     <a href="javascript: void(0)" class="file-btn">
+                         <img src="./img/uploadicon.png" />
+                         <span>上传照片</span>
+                     </a> 
+                </div>
+                <!-- <div>
+                    <button id="save" class="save" type="button">提交</button>
+                </div> -->
+            </form>
+        </div>
+        <script type="text/javascript" src="./js/zepto.js"></script>
+        <script type="text/javascript" src="./js/edit.js"></script>
+    </body>
+</html>

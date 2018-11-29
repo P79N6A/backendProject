@@ -1,0 +1,48 @@
+syntax = "proto2";
+//for c++ namespace
+package herotimerecommend_protos;
+
+option java_package = "com.qt.qq.herotimerecommendsvr";
+option java_outer_classname = "herotimerecommendsvr";
+
+enum herotimesvr_cmd_types {
+	CMD_HEROTIMESVR = 0x430;
+}
+
+enum herotimesvr_subcmd_types {
+	SUBCMD_GET_RECOMMEND_VIDEO   	   = 0x01; //拉取推荐视频
+}
+
+message VideoInfo
+{
+	required bytes  vid        = 1;      //视频ID
+	required uint32 share_time = 2;     //分享时间
+	required uint32 video_praises = 3;  //视频赞量
+	required uint32 video_views = 4;    //视频浏览量
+	optional uint32 type = 5;          //LOL:1本周热门2残暴五杀3超神杀戮4最强投稿//CF:1疯狂刀杀2无尽爆头3超神狙杀4本周热门5最强投稿 
+	optional uint32 num = 6;          //数量，现在的只有cf用，用于描述爆头数/刀杀数/狙杀数
+	optional uint32 game_id = 7;          //游戏id，默认不填，只在手游宝拉取所有视频时使用
+	optional uint32 vid_source = 8;          //视频来源，主要用于后台统计
+}
+
+//拉取推荐视频
+message GetRecommendVideoReq {
+	required uint32 game_id   = 1;   //游戏ID	
+	required uint32 area_id   = 2;   //大区ID	
+	required uint32 type   = 3;   //推荐类型1,综合排序,2最新,3,最新,
+	required uint32 num   = 5;   //拉取视频数量
+	required uint32 from_num   = 6;   //从哪个开始拉取视频，默认填0
+	optional uint32 tag_num = 7; //拉取的tag序号,和web的tag对应一致，默认为0	
+	optional uint32 soucre   = 8;   //0 lol ，1视频app ，2tgp
+	optional uint32 report_source   = 9;   //用于细致区分数据，统计视频的观看情况，数据由计算测分配管理，web请求时传入
+}
+
+message GetRecommendVideoRsp {
+	required uint32 result = 1;        //0:成功
+	required uint32 game_id   = 2;    //游戏ID	
+	required uint32 area_id = 3;       //大区ID
+	repeated VideoInfo video_list = 4; //视频列表
+	optional bytes err_msg = 5;
+	optional uint32 is_over = 6; //是否没有数据1没有，0有
+	optional uint32 next = 7; //下次拉取其实位置
+}

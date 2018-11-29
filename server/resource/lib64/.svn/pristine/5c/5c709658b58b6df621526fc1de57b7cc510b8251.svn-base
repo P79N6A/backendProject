@@ -1,0 +1,10 @@
+使用说明:
+    1.确保机器上已正确安装l5客户端程序，使用客户端工具测试正常可用
+
+	2.下载对应python版本扩展包,l5sys.so.python2.7.libc-2.4
+
+	3.建立软连接:ln -s ./l5sys.so.python2.7.libc-2.4 ./l5sys.so
+
+注:cl5现阶段只提供了这几个版本的扩展库，如果有其它版本的需求，
+   cl5 api已经开源(http://pub.code.oa.com/project/home?comeFrom=104&projectName=CL5),可以下载下来自己编译
+

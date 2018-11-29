@@ -1,0 +1,23 @@
+{
+    "game_id" : 1007058,
+    "version" : "1.0.0",
+    "creater" : "shawnsha",
+    "create_time" : "20180329",
+    "rules" : [
+	{
+	    "id" : "1",
+	    "key"  : "tags",
+	    "values" : ["HeadShotNum4"]
+	},
+	{
+	    "id" : "2",
+	    "key"  : "multikill",
+	    "values" : ["4k1"]
+	}
+    ],
+    "cmds" : [
+	{
+	    "cmd" : "1", "valid" : 1
+	}
+    ]
+}

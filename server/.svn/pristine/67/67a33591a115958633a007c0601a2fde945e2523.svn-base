@@ -1,0 +1,16 @@
+[mysql]
+host = newbridge.mdb.mig
+port = 16850
+user = writeuser
+passwd = tQdg8ZnYoVjrx04J
+db   = newbridge
+charset = utf8mb4 
+[url]
+video = http://nbstorage.wsd.qq.com/ranges?file=%s&definition=%s&version=%s
+cover = http://nbstorage.wsd.qq.com/cover?file=%s
+icon  = http://nbstorage.wsd.qq.com/icon?file=%s
+[l5]
+modid = 64176833
+cmdid = 196608
+[link]
+domain = nblinks.sparta.html5.qq.com

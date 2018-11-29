@@ -1,0 +1,883 @@
+syntax = "proto2";
+//for c++ namespace
+package herotime_protos;
+
+option java_package = "com.qt.qq.herotimesvr";
+option java_outer_classname = "HeroTimeSvr";
+
+enum herotimesvr_cmd_types {
+	CMD_HEROTIMESVR = 0x41B;
+}
+
+enum herotimesvr_subcmd_types {
+	SUBCMD_GET_VIDEOTIMELINE   = 0x01; //拉取视频timeline
+	SUBCMD_GET_BATTLEVIDEOS    = 0x02; //拉取战局相关视频
+	SUBCMD_SET_VIDEOTIMELINE   = 0x03; //设置视频信息
+	SUBCMD_DEL_VIDEO           = 0x04; //删除视频
+	SUBCMD_ADD_VIDEO_PV        = 0x05; //视频的浏览量+1
+	SUBCMD_APPLY_UPLOAD_VIDEO  = 0x06; //申请上传视频
+	SUBCMD_GET_BATTLE_INFO_NEW = 0x07; //掌盟拉取战绩是否有视频
+	SUBCMD_APPLY_DOWNLOAD_VIDEO = 0x08; //申请下载视频
+	SUBCMD_DEL_VIDEOTIMELINE   = 0x09; //删除视频信息
+	SUBCMD_GET_VIDEOS_PV       = 0x0a; //批量查询视频的浏览量
+	SUBCMD_GET_FRIENDVIDEOS    = 0x0b; //拉取好友视频（最新一个）
+	SUBCMD_GET_VIDEOSINFO      = 0x0c; //拉取视频详细信息
+	SUBCMD_GET_USERCOLLECT     = 0x0d; //拉取用户收藏视频
+	SUBCMD_SET_USERCOLLECT     = 0x0e; //设置用户收藏视频
+	SUBCMD_DEL_USERCOLLECT     = 0x0f; //删除用户收藏视频
+	SUBCMD_SET_CUSTOMTAG       = 0x11; //设置自定义标签
+	SUBCMD_GET_BATTLE_INFO     = 0x12; //拉取战局信息（废弃）
+	SUBCMD_FRIENDVIDEOS_NAK2k  = 0x13; //拉取NBA2k好友视频timeline
+	SUBCMD_SET_CUSTOMTITLE     = 0x14; //设置自定义标题
+	SUBCMD_GET_LAST_VIDEOS     = 0x15; //拉取用户最新视频
+	SUBCMD_GET_VIEW_VIDEOS     = 0x16; //拉取用户最新观看视频
+	SUBCMD_GET_VIDEOSINFO_NEW  = 0x17; //拉取视频详细信息
+	SUBCMD_SET_SUBMIT_FLAG     = 0x18; //设置投稿flag
+	SUBCMD_GET_FRIENDVIDEO_NEW = 0x19; //拉取好友视频（最新多个）
+	SUBCMD_GET_USER_VIDEO_STAT = 0x20; //拉取用户视频统计
+	SUBCMD_GET_MY_BATTLE_INFO  = 0x21; //拉取自己战绩视频
+	SUBCMD_GET_VIDEO_NUM       = 0x22; //拉取上传视频总数
+	SUBCMD_GET_VIDEOTIMELINE_MULTI       = 0x23; //拉取视频timeline(多个游戏的timeline)
+}
+
+message GameTagInfo
+{
+	message KVInfo
+	{
+		optional bytes key  = 1;       
+		optional bytes value = 2;      
+	}
+	
+	repeated KVInfo kv_list = 1;
+}
+
+message BattleMsgNotify {
+	required bytes  session_id = 1;
+	required uint32 event_id   = 2;
+	optional bytes  user_name  = 3;
+	optional uint32 same_team  = 4;      // 1：同一对
+	optional bytes  vid        = 5;      //视频ID
+	optional uint32 game_icon  = 6;      //游戏头像
+	optional bytes  title      = 7;      //视频标题
+	optional bytes  screenshot_url = 8;  //视频截图url
+	optional bytes  battle_id  = 9;      //战局ID
+}
+
+message PlayerInfo
+{
+	optional uint32 accout_id  = 1;      //用户account_id
+	optional uint32 team   = 2;          //0: 红 1:蓝方
+	optional bytes  hero_name  = 3;      //英雄名
+	optional uint32 uin  = 4;            //用户QQ号
+	optional uint32 skin_index  = 5;     //皮肤ID
+	optional uint32 hero_id   = 6;       //英雄ID
+}
+
+message LOLTagInfo
+{
+	optional bytes  grade     = 1;   //段位
+	optional uint32 level     = 2;   //等级
+	optional uint32 hero_id   = 3;   //英雄ID
+	optional bytes  hero_name = 4;   //英雄名
+	optional bytes  map_mode  = 5;   //地图模式
+	optional uint32 kill_num  = 6;   //杀人头数量
+	optional bool   is_win    = 7;   //0:负，1：胜
+
+	optional uint32 skin_index  = 30;     //皮肤ID
+
+	optional uint32  assist_num  = 13; //助攻数量
+	optional uint32  die_num     = 14; //死亡数量
+	optional uint32  kill_2_num  = 15; //二杀数量
+	optional uint32  kill_3_num  = 16; //三杀数量
+	optional uint32  kill_4_num  = 17; //四杀数量
+	optional uint32  kill_5_num  = 18; //五杀数量
+	optional uint32  kill_6_num  = 19; //六杀数量
+
+	optional bool kill_big_dragon   = 36;   // 大龙
+	optional bool kill_small_dragon = 37;   // 小龙
+
+	repeated PlayerInfo player_list = 20; //战局用户信息
+	optional bytes  game_mode  = 21;   //游戏模式
+
+	//熟练度相关
+	optional uint32  championID = 22;
+	optional uint32  championLevel = 23;
+	optional uint32  championPointsBeforeGame = 24;
+	optional uint32  championPointsGained = 25;
+	optional uint32  championPointsGainedIndividualContribution = 26;
+	optional uint32  bonusChampionPointsGained = 27;
+
+	optional uint64  game_gdp_id  = 32;		// 从GDP获取的游戏id
+	optional uint64  game_report_id  = 33;	// 从战绩包获取的游戏id
+	optional uint64  game_amf_id  = 34;		// 从普通amf包获取的游戏id
+	optional bytes  write_time  = 35;		// 写battleinfo的时间
+
+
+	optional bool    is_mvp    = 31;   //是否mvp
+}
+
+message CFTagInfo
+{
+	message BossInfo
+	{
+		optional uint32 id = 1;    //BOSS ID
+		optional bytes  name = 2;  //BOSS NAME
+		optional uint32 kill_num = 3;   //BOSS 被杀次数
+	}
+
+	optional uint32 map_id = 1;             //地图ID
+	optional uint32 game_mode_id = 2;       //模式ID
+    optional uint32 charactor_id = 3;       //角色ID
+	optional uint32 gold_headshot_count = 4;//黄金爆头次数
+    optional uint32 headshot_count = 5;     //普通爆头次数
+	optional uint32 shot_count = 6;         //普通杀人次数
+    optional uint32 first_weapon_id = 7;    //杀人最多武器id
+    optional uint32 first_count = 8;        //杀人最多武器次数
+	optional uint32 second_weapon_id = 9;   //杀人第二多武器id
+	optional uint32 second_count = 10;      //杀人第二多武器次数
+	optional uint32 third_weapon_id = 11;   //杀人第三多武器id
+	optional uint32 third_count = 12;       //杀人第三多武器次数
+	optional uint32 weapon_used_count = 13; //杀人使用武器总数
+	repeated BossInfo boss_list  = 14;      //BOSS被杀列表
+	optional bool gun_multikill = 15;       //一枪多杀
+	optional bool grenade_multikill = 16;   //一雷多杀
+}
+
+//自定义标签信息
+message CustomTagInfo
+{
+	required uint32 tag_id = 1;      //标签ID
+	optional bytes  style  = 2;      //标签样式
+	optional uint32 expire_time = 3; //过期时间
+}
+
+//自定义标题信息
+message CustomTitleInfo
+{
+	required bytes  title  = 1;      //标题
+	optional bytes  style  = 2;      //标题样式
+	optional uint32 type   = 3;      //0：默认 1：自定义
+}
+
+//多码率视频信息
+message VideoRateInfo
+{
+	required bytes   vid     = 1;      //视频ID
+	required uint32  height  = 2;      //视频高
+	required uint32  width   = 3;      //视频宽
+	required uint32  rate    = 4;      //视频码率
+	optional uint32	 pc_only = 5;	   //是否只用于pc端播放。1表示只能在pc播放 ，0表示可以在PC和MOBILE两个平台播放
+}
+
+message EditTagInfo
+{
+	optional bool  add_music      = 1;  //添加了音乐
+	optional bool  add_effect	  = 2;  //添加了特效
+	optional bool  add_expression = 3;  //添加了表情
+	optional bool  add_recording  = 4;  //添加了录音
+	optional bool  add_comment    = 5;  //添加了文字注释
+}
+
+message EditEventInfo
+{
+	optional bytes  version      = 1;  //Lua版本
+	repeated bytes  event_list   = 2;  //事件列表
+	optional uint32 type         = 3;  //0：自动剪辑，1：人工剪辑
+}
+
+message VideoInfo
+{
+	required bytes  vid        = 1;      //视频ID
+	optional uint32 uin        = 2;      //分享用户uin
+	optional uint32 accout_id  = 3;      //分享用户游戏ID
+	optional uint32 area_id    = 4;      //大区ID
+	optional uint32 game_icon  = 5;      //游戏头像
+	optional bytes  game_name  = 6;      //游戏昵称
+	optional bytes  battle_id  = 7;      //战局ID
+	optional bytes  game_mode  = 8;      //游戏模式
+	required bytes  url        = 9;      //视频截图url
+	required uint32 video_time = 10;     //视频总时长
+	optional uint32 game_time  = 11;     //游戏时间
+	required uint32 share_time = 12;     //分享时间
+	optional uint32 related_videos = 13; //相关视频个数
+	optional uint32 video_views = 14;    //视频浏览量
+	repeated uint32 user_list   = 15;    //战局用户列表
+	optional bytes  uuid        = 16;    //分享用户uuid
+	optional bytes  uid         = 18;    //分享用户uid
+	optional uint32 video_size  = 17;    //视频大小
+
+	optional uint32 game_id      = 37;   //游戏ID
+	optional uint32 praise_num = 40;     //视频点赞量
+
+	optional bytes  user_tag      = 53;   	       //用户标签
+	optional CustomTagInfo custom_tag  = 42;       //自定义标签
+	optional CustomTitleInfo custom_title  = 45;   //自定义标题
+	optional uint32 submit_flag  = 46;   //flag 1: 最强投稿  2：加精视频 3: 运营投稿
+	optional bytes  source_name = 47;    //来源名称
+
+	optional uint32 video_type = 48;     //视频类型 0：正常的 1：10s彩蛋视频 2: 手游视频 3:自由录制 4：手游10s短视频
+	optional bytes  video_text = 49;     //视频文本（限500字节）
+	optional bytes  user_nick = 50;      //用户QQ、微信昵称
+	optional bytes  user_icon = 51;      //用户QQ、微信头像
+	optional bytes  pkg_name = 52;       //游戏包名
+
+	optional LOLTagInfo lol_tag  = 38;   //lol 标签
+	optional CFTagInfo  cf_tag   = 39;   //cf 标签
+
+	optional bytes      tag_info = 43;   //其他游戏tag信息
+	optional EditTagInfo edit_tag = 54;  //剪辑标签
+	optional EditEventInfo edit_info = 55; //剪辑事件信息
+	
+	repeated VideoRateInfo vid_list = 44; //多码率视频信息
+    optional bytes uuid2            = 56;
+}
+
+message TimelineInfo
+{
+	required bytes  vid  = 1;   //视频ID
+	optional uint32 uin  = 2;   //分享者uin
+	optional uint32 team = 3;   //分享者team
+	optional bytes 	uid  = 4;   //分享者uid
+}
+
+//拉取自己timeline
+message GetMyTimelineReq {
+	optional bytes  user_id = 1;   //用户qq号
+	optional bytes  open_id = 2;  //微信openid
+	optional uint32 area_id = 3;   //大区ID
+	required uint32 begin_sec = 4;  //开始拉取起始秒数
+	required uint32 begin_usec = 5; //开始拉取起始毫秒数
+	required uint32 num = 6;        //拉取的个数
+	required uint32 game_id  = 7;   //游戏ID
+	optional uint32 filter_by_area  = 8;  //是否按大区过滤 0：不分区 1：分区
+	optional uint32 order_flag  = 9;  //0 从大于time开始拉取数据条目 ；1从小于time的值开始拉取数据条目
+	optional uint32 need_tag  = 10;  //是否拉取 tag信息 0：不拉 1：拉
+	optional uint32 source  = 11;    //来源 0:pc 1：ios_qq 2：android_qq 3：ios_wx 4：android_wx
+}
+
+message GetMyTimelineRsp {
+	required uint32 result = 1;        //0:成功 1：失败
+	repeated VideoInfo video_list = 2; //视频列表
+	optional uint32 total_num = 3;     //视频总数	
+	optional uint32 end_sec = 4;       //最后一条记录的秒数，若取到num条则是读到的最后一条数据的时间，若取不足，则是搜寻到最后, sec =0
+	optional uint32 end_usec = 5;      //最后一条记录的微秒数
+}
+
+message AccountInfo
+{
+	required bytes  openid			 = 1; //qq/wx openid	
+	optional bytes  access_token     = 2; //qq登录需要填 登录的token
+	optional uint32 clientip         = 3; //qq登录需要填 客户端ip
+	optional uint64 qqappid          = 4; //qq登录需要填 游戏appid
+	optional uint32 type             = 5; //wx:0 qq:1
+}
+
+//拉取视频timeline, 已有uuid
+message GetVideoTimelineReq {
+	optional uint64 user_uin = 1;   //用户qq号
+	optional uint32 area_id  = 2;   //大区ID
+	required uint32 type     = 3;   // 0: 拉取我的视频 1：拉取战局视频 2:拉取好友的timeline 3:IDIP 微信
+	required uint32 begin_sec = 4;  //开始拉取起始秒数
+	required uint32 begin_usec = 5; //开始拉取起始毫秒数
+	required uint32 num = 6;        //拉取的个数
+	optional uint32 game_id  = 7;   //游戏ID
+	optional uint32 source  = 8;    //来源 0:pc 1：ios_qq 2：android_qq 3：ios_wx 4：android_wx
+	optional uint32 need_tag  = 9;  //是否拉取 tag信息 0：不拉 1：拉
+	optional bytes  uuid    = 10;    //用户uuid
+	optional bytes  pkg_name  = 11;  //游戏包名
+	optional uint32 filter_by_area  = 12;  //是否按大区过滤 0：不分区 1：分区
+	optional AccountInfo account_info = 13; //微信或qq 账户信息
+	optional uint32 need_user_tag  = 14;  //是否拉取 用户tag信息 0：不拉 1：拉
+	optional uint64  wegameid = 15;
+}
+
+message GetVideoTimelineRsp {
+	required uint32 result = 1;        //0:成功 1：失败
+	optional uint64 user_uin = 2;      //用户qq号
+	optional uint32 area_id = 3;       //大区ID
+	repeated VideoInfo video_list = 4; //视频列表
+	optional uint32 total_num = 5;     //视频总数	
+	optional uint32 end_sec = 6;       //最后一条记录的秒数，若取到num条则是读到的最后一条数据的时间，若取不足，则是搜寻到最后, sec =0
+	optional uint32 end_usec = 7;      //最后一条记录的微秒数
+	optional uint64 wegameid = 8;
+}
+
+//拉取视频timeline(多个游戏的timeline), 已有uuid
+message GetVideoTimelineMultiReq {
+	optional uint64 user_uin = 1;   //用户qq号
+	optional uint32 area_id  = 2;   //大区ID
+	required uint32 type     = 3;   // 0: 拉取我的视频 1：拉取战局视频 2:拉取好友的timeline 3:IDIP 微信
+	required uint32 begin_sec = 4;  //开始拉取起始秒数
+	required uint32 begin_usec = 5; //开始拉取起始毫秒数
+	required uint32 num = 6;        //拉取的个数
+	repeated uint32 game_id_list  = 7;   //游戏ID
+	optional uint32 source  = 8;    //来源 0:pc 1：ios_qq 2：android_qq 3：ios_wx 4：android_wx
+	optional uint32 need_tag  = 9;  //是否拉取 tag信息 0：不拉 1：拉
+	optional bytes  uuid    = 10;    //用户uuid
+	optional bytes  pkg_name  = 11;  //游戏包名
+	optional uint32 filter_by_area  = 12;  //是否按大区过滤 0：不分区 1：分区
+	optional AccountInfo account_info = 13; //微信或qq 账户信息
+	optional uint32 need_user_tag  = 14;  //是否拉取 用户tag信息 0：不拉 1：拉
+	optional uint64  wegameid = 15;
+	optional bytes  flag = 16; //标识每个请求flag
+}
+
+message GetVideoTimelineMultiRsp {
+	required uint32 result = 1;        //0:成功 1：失败
+	optional uint64 user_uin = 2;      //用户qq号
+	optional uint32 area_id = 3;       //大区ID
+	repeated VideoInfo video_list = 4; //视频列表
+	optional uint32 total_num = 5;     //视频总数	
+	optional uint32 end_sec = 6;       //最后一条记录的秒数，若取到num条则是读到的最后一条数据的时间，若取不足，则是搜寻到最后, sec =0
+	optional uint32 end_usec = 7;      //最后一条记录的微秒数
+	optional uint64 wegameid = 8;
+	optional bytes  flag = 9; //标识每个请求flag
+}
+
+//拉取好友视频timeline 新增uuid
+message GetFriendTimelineReq {
+	required uint64 user_uin = 1;   //用户qq号
+	required uint32 area_id  = 2;   //大区ID	
+	required uint32 begin_sec = 4;  //开始拉取起始秒数
+	required uint32 begin_usec = 5; //开始拉取起始毫秒数
+	required uint32 num = 6;        //拉取的好友个数
+	optional uint32 game_id  = 7;   //游戏ID
+	optional uint32 source  = 8;    //来源 0:pc 1：ios 2：android
+	optional bytes  uuid	= 9;	
+}
+
+message FriendTimelineInfo
+{
+	required VideoInfo info = 1;    //好友最新视频信息
+	optional uint32 total_num = 2;  //分享视频总数	
+}
+
+message GetFriendTimelineRsp {
+	required uint32 result = 1;        //0:成功 1：失败
+	required uint64 user_uin = 2;      //用户qq号
+	required uint32 area_id = 3;       //大区ID
+	repeated FriendTimelineInfo info_list = 4; //好友视频列表	
+	optional uint32 total_num = 5;  
+	optional uint32 end_sec = 6;       //最后一条记录的秒数，若取到num条则是读到的最后一条数据的时间，若取不足，则是搜寻到最后, sec =0
+	optional uint32 end_usec = 7;      //最后一条记录的微秒数
+}
+
+//拉取好友视频timeline
+message GetFriendTimelineNewReq {
+	required uint64 user_uin = 1;   //用户qq号
+	required uint32 area_id  = 2;   //大区ID	
+	required uint32 begin_sec = 3;  //开始拉取起始秒数
+	required uint32 begin_usec = 4; //开始拉取起始毫秒数
+	required uint32 num = 5;        //拉取的好友个数
+	required uint32 per_num = 6;        //拉取的好友个数
+	optional uint32 game_id  = 7;   //游戏ID
+	optional uint32 source  = 8;    //来源 0:pc 1：ios 2：android
+}
+
+message FriendTimelineInfoNew
+{
+	repeated VideoInfo info_list = 1;  //好友最新视频信息
+	optional uint32 total_num = 2;     //分享视频总数	
+}
+
+message GetFriendTimelineNewRsp {
+	required uint32 result = 1;        //0:成功 1：失败
+	required uint64 user_uin = 2;      //用户qq号
+	required uint32 area_id = 3;       //大区ID
+	repeated FriendTimelineInfoNew info_list = 4; //好友视频列表	
+	optional uint32 total_num = 5;  
+	optional uint32 end_sec = 6;       //最后一条记录的秒数，若取到num条则是读到的最后一条数据的时间，若取不足，则是搜寻到最后, sec =0
+	optional uint32 end_usec = 7;      //最后一条记录的微秒数
+}
+
+//拉取NBA2k好友视频timeline
+message GetNBA2kFriendTimelineReq {
+	repeated uint64 user_list = 1;   //好友list
+	required uint32 area_id  = 2;   //大区ID	
+	required uint32 begin_sec = 4;  //开始拉取起始秒数
+	required uint32 begin_usec = 5; //开始拉取起始毫秒数
+	required uint32 num = 6;        //拉取的个数
+	optional uint32 game_id  = 7;   //游戏ID
+}
+
+message GetNBA2kFriendTimelineRsp {
+	required uint32 result = 1;        //0:成功 1：失败
+	required uint32 area_id = 3;       //大区ID
+	repeated FriendTimelineInfo info_list = 4; //好友视频列表	
+	optional uint32 total_num = 5;  
+	optional uint32 end_sec = 6;       //最后一条记录的秒数，若取到num条则是读到的最后一条数据的时间，若取不足，则是搜寻到最后, sec =0
+	optional uint32 end_usec = 7;      //最后一条记录的微秒数
+}
+
+//拉取战局相关视频
+message GetBattleVideosReq {
+	required uint64 user_uin  = 1;        //用户qq号
+	required uint32 area_id   = 2;        //大区ID
+	required bytes  battle_id = 3;        //战局ID 
+	required uint32 start_idx = 4;        //开始拉取下标，如 0 10 20
+	required uint32 num = 5;              //拉取的个数
+	optional uint32 game_id  = 6;         //游戏ID
+	optional uint32 source   = 7;         //来源 0：PC 1:ios 2:android
+	repeated uint32 user_list = 8;        //战局用户列表（旧掌盟接口，弃用）
+	optional uint32 need_playerinfo = 9;  //返回玩家信息
+	optional uint32 need_tag  = 10;       //是否拉取 tag信息 0：不拉 1：拉
+	optional uint32 battle_time = 11;     //战局时间（新掌盟接口）
+	optional AccountInfo account_info = 12; //微信或qq openid信息 有QQ号的，不用设置这个字段
+}
+
+message GetBattleVideosRsp {
+	required uint32 result = 1;        //0:成功 1：失败
+	required uint64 user_uin = 2;      //用户qq号
+	required uint32 area_id = 3;       //大区ID
+	repeated VideoInfo video_list = 4; //视频列表
+	optional uint32 total_num = 5;     //视频总数	
+	repeated PlayerInfo player_info = 6;     
+}
+
+message BattleInfo
+{
+	required bytes  battle_id = 1;      //战局ID 
+	repeated PlayerInfo user_list = 2;  //战局用户列表 （旧掌盟接口，弃用）
+	optional uint32 has_video = 3;      //0:没有视频，1：有视频
+	optional uint32 battle_time = 4;    //战局时间
+	optional uint32 self_team = 5;      //请求者的战局team
+}
+
+//判断战绩是否有英雄时刻视频
+message GetBattleInfoReq {
+	required uint64 user_uin  = 1;   //用户qq号
+	required uint32 area_id   = 2;   //大区ID
+	repeated BattleInfo  battle_list = 3;   //战局ID 
+	optional uint32 game_id  = 4;   //游戏ID
+	optional uint32 source   = 5;   //来源 0：PC 1:ios 2:android
+}
+
+message GetBattleInfoRsp {
+	required uint32 result = 1;        //0:成功 1：失败
+	required uint64 user_uin = 2;      //用户qq号
+	required uint32 area_id = 3;       //大区ID
+	repeated BattleInfo battle_list = 4; //视频列表	
+}
+
+//拉取自己战绩视频
+message GetMyBattleVideosReq {
+	optional bytes  uid  = 1;   //通过用户qq号/wx号
+	optional AccountInfo account_info = 2; //通过微信或qq openid
+	required bytes  battle_id = 3;   //战局ID 
+	required uint32 start_idx = 4;        //开始拉取下标，如 0 10 20
+	required uint32 num = 5;              //拉取的个数
+	optional uint32 game_id  = 6;   //游戏ID
+	optional uint32 source   = 7;   //来源 0：PC 1:ios 2:android
+	optional uint32 need_tag  = 8;  //是否拉取tag信息 0：不拉 1：拉
+}
+
+message GetMyBattleVideosRsp {
+	required uint32 result = 1;        //0:成功 1：失败
+	repeated VideoInfo video_list = 2; //视频列表
+	optional uint32 total_num = 3;     //视频总数	
+}
+
+//设置视频timeline
+message SetVideoTimelineReq {
+	optional uint64 user_uin = 1;   //用户qq号
+	optional uint32 area_id  = 2;   //大区ID
+	required VideoInfo video_info = 3;   // 我的视频
+	optional uint32 game_id  = 4;   //游戏ID
+	optional uint32 source  = 5;    //来源 0:pc 1：ios_qq 2：android_qq 3：ios_wx 4：android_wx
+	optional bytes  uuid    = 6;    //用户uuid
+	optional bytes  pkg_name  = 7;  //游戏包名
+}
+
+message SetVideoTimelineRsp {
+	required uint32 result = 1;        //0:成功 1：失败
+	optional uint64 user_uin = 2;      //用户qq号
+	optional uint32 area_id = 3;       //大区ID	
+	optional bytes  wegameid = 4;	   //
+}
+
+//删除视频timeline
+message DelVideoTimelineReq {
+	optional uint64 user_uin = 1;   //用户qq号
+	optional uint32 area_id  = 2;   //大区ID
+	required bytes  vid      = 3;   // 	
+	required uint32 source   = 4;   //来源 0:pc 1：ios_qq 2：android_qq 3：ios_wx 4：android_wx
+	optional uint32 game_id  = 5;   //游戏ID
+	optional bytes  uuid    = 6;    //用户uuid
+	optional bytes  pkg_name  = 7;  //游戏包名
+}
+
+message DelVideoTimelineRsp {
+	required uint32 result = 1;        //0:成功 1：失败
+	optional uint64 user_uin = 2;      //用户qq号
+	optional uint32 area_id = 3;       //大区ID	
+}
+
+//删除视频
+message DelVideoReq {
+	required bytes  uid      = 1;   //用户id
+	required bytes  vid      = 2;   //vid 	
+	required uint32 game_id  = 3;   //游戏ID
+	optional uint64 wegameid = 4;
+}
+
+message DelVideoRsp {
+	required uint32 result = 1;        //0:成功 1：失败
+	optional uint64 wegameid = 2;
+}
+
+message VideoPV
+{	
+	required uint32 pv    = 1;         //浏览量
+	optional bytes  vid   = 2;         //视频ID
+}
+
+//视频PV+1
+message AddVideoPVReq {
+	required uint64 user_uin = 1;   //用户qq号
+	required uint32 area_id  = 2;   //大区ID
+	required bytes  vid = 3;        //视频ID
+	optional uint32 game_id  = 4;   //游戏ID
+	optional uint32 type  = 5; 
+	//0:pc客户端 1:web 2：视频app
+	optional uint32 source  = 6; 
+	//来源
+	optional bytes  user_id = 7; 
+	optional uint32 video_type  = 8; 
+}
+
+message AddVideoPVRsp {
+	required uint32 result = 1;        //0:成功 1：失败
+	required uint64 user_uin = 2;      //用户qq号
+	required uint32 area_id = 3;       //大区ID	
+	optional uint32 video_pv = 4;	   //视频浏览量
+}
+
+//批量查询视频PV
+message GetVideosPVReq {
+	required uint64 user_uin = 1;       //用户qq号
+	required uint32 area_id  = 2;       //大区ID
+	repeated bytes  vid_list = 3;       //视频ID
+	optional uint32 game_id  = 4;       //游戏ID
+}
+
+message GetVideosPVRsp {
+	required uint32 result = 1;         //0:成功 1：失败
+	required uint64 user_uin = 2;       //用户qq号
+	required uint32 area_id = 3;        //大区ID	
+	repeated VideoPV video_pv_list = 4; //视频浏览量
+}
+
+//批量查询视频信息
+message GetVideosInfoReq {
+	optional uint64 user_uin = 1;       //用户qq号
+	optional uint32 area_id  = 2;       //大区ID
+	repeated bytes  vid_list = 3;       //视频ID
+	optional uint32 game_id  = 4;       //游戏ID
+	optional uint32 need_tag  = 5;      //是否拉取 tag信息 0：不拉 1：拉
+	optional uint32 source  = 6;        //来源 0:pc 1：ios_qq 2：android_qq 3：ios_wx 4：android_wx
+	optional bytes  uuid    = 7;        //用户uuid
+	optional bytes  pkg_name  = 8;      //游戏包名
+	optional uint32 need_user_tag  = 9; //是否拉取 用户tag信息 0：不拉 1：拉
+	optional uint32 need_original_uin = 10;	//是否返回原始uin字段
+}
+
+message GetVideosInfoRsp {
+	required uint32 result = 1;         //0:成功 1：失败
+	optional uint64 user_uin = 2;       //用户qq号
+
+	optional uint32 area_id = 3;        //大区ID	
+	repeated VideoInfo video_info_list = 4; //视频信息
+}
+
+message GameVidInfo
+{
+	required bytes  vid  = 1;       //视频ID
+	required uint32 game_id  = 2;   //游戏ID
+	optional uint32 update_time  = 3;   //更新时间
+}
+
+message UserViewList
+{
+	repeated GameVidInfo vid_list = 1; //用户观看视频列表
+}
+
+//批量查询视频信息（不同游戏）
+message GetVideosInfoNewReq {
+	repeated GameVidInfo  vid_list = 1; //视频ID 列表	
+	optional uint32 need_tag  = 2;      //是否拉取 tag信息 0：不拉 1：拉
+	optional uint32 source  = 3;        //来源 0:pc 1：ios 2：android
+}
+
+message GetVideosInfoNewRsp {
+	required uint32 result = 1;         //0:成功 1：失败	
+	repeated VideoInfo video_info_list = 4; //视频信息
+}
+
+message CollectInfo
+{
+	required bytes  vid      = 1;    //视频ID
+	required uint32 time     = 2;    //收藏时间
+	optional uint32 is_best  = 3;    //1: 代表作
+}
+
+message UserCollectInfo
+{
+	repeated CollectInfo collect_list = 1; //收藏列表
+}
+
+//删除dirty 数据
+message DelDirtyDataReq {
+	required uint64 user_uin = 1;   //用户qq号
+	required uint64 num = 2;   //游戏ID
+	required uint64 game_id = 3;   //游戏ID
+	optional uint64 type = 4;   //游戏ID
+}
+
+message DelDirtyDataRsp {
+	required uint32 result = 1;        //0:成功 1：失败
+	required uint64 user_uin = 2;      //用户qq号
+}
+
+//拉取用户收藏视频
+message GetUserCollectReq {
+	required uint64 user_uin = 1;   //用户qq号
+	required uint32 area_id  = 2;   //大区ID
+	optional uint32 only_best = 3;  //1: 只拉取代表作
+	optional uint32 game_id  = 4;   //游戏ID
+	optional uint32 index    = 5;   //下标
+	optional uint32 num      = 6;   //数量
+	optional uint32 source  = 7;   //来源 0:pc 1：ios 2：android
+	optional uint32 need_tag  = 8;       //是否拉取 tag信息 0：不拉 1：拉
+	optional bytes  uuid      = 9;          //用户uuid
+}
+
+message GetUserCollectRsp {
+	required uint32 result = 1;        //0:成功 1：失败
+	required uint64 user_uin = 2;      //用户qq号
+	required uint32 area_id = 3;       //大区ID
+	repeated VideoInfo video_list = 4; //视频列表
+}
+
+//设置用户收藏视频
+message SetUserCollectReq {
+	required uint64 user_uin = 1;   //用户qq号
+	required uint32 area_id  = 2;   //大区ID
+	required bytes  vid      = 3;   //视频ID
+	optional uint32 best_video  = 4;// 1: 设置为代表作
+	optional uint32 game_id  = 5;   //游戏ID
+}
+
+message SetUserCollectRsp {
+	required uint32 result = 1;        //0:成功 1：失败
+	required uint64 user_uin = 2;      //用户qq号
+	required uint32 area_id = 3;       //大区ID	
+}
+
+//删除用户收藏视频
+message DelUserCollectReq {
+	required uint64 user_uin = 1;   //用户qq号
+	required uint32 area_id  = 2;   //大区ID
+	required bytes  vid      = 3;   //视频ID
+	optional uint32 game_id  = 4;   //游戏ID
+}
+
+message DelUserCollectRsp {
+	required uint32 result = 1;        //0:成功 1：失败
+	required uint64 user_uin = 2;      //用户qq号
+	required uint32 area_id = 3;       //大区ID	
+}
+
+//设置自定义标签
+message SetCustomTagReq {
+	required uint64 user_uin = 1;   //用户qq号
+	required uint32 area_id  = 2;   //大区ID
+	required bytes  vid      = 3;   //视频ID	
+	optional uint32 game_id  = 4;   //游戏ID
+	optional uint32 type  = 5;      //0: 修改  1：删除
+	optional CustomTagInfo custom_tag = 6;   //自定义标签
+}
+
+message SetCustomTagRsp {
+	required uint32 result = 1;        //0:成功 1：失败
+	required uint64 user_uin = 2;      //用户qq号
+	required uint32 area_id = 3;       //大区ID	
+}
+
+//设置自定义标题
+message SetCustomTitleReq {
+	required uint64 user_uin = 1;   //用户qq号
+	required uint32 area_id  = 2;   //大区ID
+	required bytes  vid      = 3;   //视频ID	
+	optional uint32 game_id  = 4;   //游戏ID
+	optional CustomTitleInfo custom_title = 5;   //自定义标题
+}
+
+message SetCustomTitleRsp {
+	required uint32 result = 1;        //0:成功 1：非视频作者  2：有敏感词 3：拉取不到视频信息 4 ：服务异常
+	required uint64 user_uin = 2;      //用户qq号
+	required uint32 area_id = 3;       //大区ID	
+}
+
+//设置投稿flag
+message SetSubmitFlagReq {	
+	required bytes  vid  = 1;      //视频ID	
+	required uint32 flag = 2;      //flag 1: 最强投稿  2： 加精视频 3： 运营投稿
+	optional uint32 game_id = 3;   //游戏ID
+	optional uint32 tag_id  = 4;   //栏目ID 
+}
+
+message SetSubmitFlagRsp {
+	required uint32 result = 1;    //0:成功 1：服务异常
+}
+
+message UserLastVideos {
+	required uint32 uin = 1;           //用户uin
+	optional uint32 total_num  = 2;    //视频总数
+	repeated VideoInfo video_list = 3; //用户视频列表	
+}
+
+//拉取用户最新视频
+message GetLastVideosReq {
+	repeated uint64 user_list = 1;   //用户list
+	optional uint32 area_id  = 2;   //大区ID		
+	optional uint32 num = 3;        //拉取的个数
+	optional uint32 game_id  = 4;   //游戏ID
+	optional uint32 source   = 5;   
+}
+
+message GetLastVideosRsp {
+	required uint32 result = 1;        //0:成功 1：失败
+	optional uint32 area_id  = 2;      //大区ID
+	repeated UserLastVideos info_list = 3; //用户视频列表	
+}
+
+message ViewVideoInfo
+{
+	required VideoInfo video_info = 1; //视频信息
+	required uint32 view_time  = 2;    //观看时间
+}
+
+//拉取用户观看视频
+message GetViewVideosReq {
+	required bytes  user_id = 1;    //用户id
+	optional uint32 area_id  = 2;   //大区ID		
+	optional uint32 num = 3;        //拉取的个数
+	optional uint32 game_id  = 4;   //游戏ID
+	optional uint32 source   = 5;   
+}
+
+message GetViewVideosRsp {
+	required uint32 result = 1;           //0:成功 1：失败	
+	repeated ViewVideoInfo view_list = 2; //用户视频列表	
+}
+
+//拉取用户视频信息
+message GetUserVideoStatReq {
+	required bytes  user_id = 1;    //用户id
+	optional uint64 source = 2;     //来源 0:pc 1：ios_qq 2：android_qq 3：ios_wx 4：android_wx
+}
+
+message GetUserVideoStatRsp {
+	required uint32 result = 1;     //0:成功 1：失败	
+	optional bytes  user_id = 2;    //用户id	
+	
+	message VideoStat
+    {
+        optional uint32 video_num = 1;  //视频个数
+		optional uint32 video_time = 2; //视频时长
+    }
+
+    optional VideoStat video_stat = 3;	
+}
+
+
+message GetVideoNumReq
+{
+	optional bytes user_id = 1;          //用户id.(QQ号直接转字符串,微信号转Commid)
+	optional uint32 type   = 2;          //0: pc 
+}
+
+message GetVideoNumRsp
+{
+	optional uint32 result = 1;
+	optional bytes err_msg = 2;
+    optional uint32 num = 3;
+}
+
+//<add by zidanma>
+//上传申请
+message ApplyUploadVideoReq
+{
+    required string file_uuid = 1;  //待上传的视频uuid
+    required string filetype = 2;   //文件格式，后缀
+    required uint64 filesize = 3;   //上传文件大小
+    required string filesha = 4;    //文件全文sha，为40字节16进制字符串。
+    required string filemd5 = 5;    //文件全文md5，为32字节16进制字符串。
+    optional uint32 src_hight = 6;  //源视频高度
+    optional uint32 src_width = 7;  //源视频宽度
+    optional uint32 dst_hight = 8;  //目标视频高度
+    optional uint32 dst_width = 9;  //目标视频宽度
+    optional uint32 game_id = 10;   //游戏ID
+	optional uint32 source  = 11;   //来源 0:pc 1：ios_qq 2：android_qq 3：ios_wx 4：android_wx
+	optional bytes  pkg_name  = 12; //游戏包名
+	optional uint32 addrtype  = 13; //0外网IP 1域名（暂不支持）2内网IP
+}
+
+message ApplyUploadVideoRsp
+{
+    required uint32 result = 1;        //0:成功 1：失败
+    optional string error_msg = 2;        //错误信息
+    optional uint32 exists = 3;//是否有相同内容的文件已存在，已存在的文件会快速秒传完成。
+    optional string svr_ip = 4;//上传服务器ip
+    optional uint32 svr_port = 5;//上传服务器port
+    optional string upload_key = 6;//校验串，608个字节的二进制转换16进制后字符串。包括了上传文件的信息，上传时需要将其转换为2进制串，并传入以作鉴权。
+}
+
+//5.申请下载
+message ApplyDownloadVideoReq
+{
+    required bytes file_uuid = 1;//上传成功的视频uuid
+    required uint32 platform = 2;//播放平台:1: PC flash 2: PC html5 3: Android phone app 4: Android html5 5: ipad app 6: ipad html5 7: iphone app 8: iphone html5 9: Android pad app 10: android tv 11: wap 
+    optional uint32 speed = 3;//用户网速(kBps): 可以为空
+    optional string defaultfmt = 4;//用户指定的播放格式名称:可为空 为空时表示不指定： mp4:默认mp4 flv:默认flv sd:标清 hd:高清 shd:超清 fhd:全高清 msd:手机
+    optional uint32 network = 5;//用户接入网络: 可为空 0: unknow 1: wifi 2: 3G 4: gprs 5: line
+    optional uint32 mcc = 6[default=460];//移动国家号码，唯一地识别移动客户所属的国家，由3位数字组成 可为空 默认值为460(中国)
+    optional uint32 mnc = 7;// 移动网号，识别移动客户端所属的移动网，由2位数字组成 移动: 00/02/07 联通: 01/06 电信: 03/05 铁通: 20 可为空 默认为00
+    optional float lng = 8;//用户所在经度，指东经 可为空 默认值为0
+    optional float lat = 9;//用户所在纬度，指北纬 可为空 默认值为0
+    optional uint32 game_id = 10;//游戏ID
+    optional uint32 source  = 11;    //来源 0:pc 1：ios_游戏时刻 2：android_游戏时刻 3：ios_TGP 4：android_TGP
+	optional bytes  pkg_name  = 12;  //游戏包名
+}
+
+message ApplyDownloadVideoRsp
+{
+    required uint32 result = 1;//0:成功 1：失败
+    optional string error_msg = 2;//错误信sp
+    optional string name = 3;//播放格式名称:(sd:流畅hd:高清 shd:超清 flv mp4 msd) (不为空)
+    optional uint32 br = 4;//视频码率(单位KBps),每个格式对应一个码率等级
+    message ui
+    {
+        required string url = 1;//视频下载地址
+        required uint32 vt = 2;//CDN频道
+    }
+    repeated ui ul = 5;//下载地址列表(不为空,至少有1个地址,最多4个,否则为空)
+    optional uint32 vw = 6;//视频宽度
+    optional uint32 vh = 7;//视频高度
+    optional uint32 fs = 8;//视频文件大小
+    optional string fn = 9;//视频文件名称
+    optional uint32 tm = 10;//机器当前utc时间(不为空，单位s)
+    optional bytes token = 11;//drm token(非付费视频可为空,长度根据clientKey(即验登陆时用的key)长度而定)
+    //视频片段信息
+    message ci
+    {
+        optional uint32 idx = 1;//片段索引位置(format为0或1时可为空)
+        optional uint32 cs = 2;//片段文件大小(单位字节)
+        optional float cd = 3;//片段播放时长(单位秒)
+        optional string cmd5 = 4;//片段文件md5校验值
+        optional string cn = 5;//片段文件名
+        optional string vkey = 6;//文件访问校验vkey
+        optional string sha = 7;//文件访问区域中心sha索引
+    }
+    repeated ci cl = 12;// 视频片段列表
+}
